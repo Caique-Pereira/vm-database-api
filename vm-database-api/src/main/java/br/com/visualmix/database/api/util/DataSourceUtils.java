@@ -13,7 +13,8 @@ public class DataSourceUtils {
             case "2": return new PostgresDataSource();
             case "3": return new OracleDataSource();
             default:
-                throw new IllegalArgumentException("Unexpected value connection type: " + connectionType);
+            	System.out.println("Tipo de conexão invalida ou nula :  " + connectionType);
+                return null; 
         }
     }
 

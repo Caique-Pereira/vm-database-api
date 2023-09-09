@@ -1,18 +1,18 @@
 package br.com.visualmix.database.api.config;
 
 
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.AdviceMode;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.context.annotation.PropertySource;
 
 
 
 @Configuration
 @EnableCaching(mode = AdviceMode.ASPECTJ)
 @EnableAspectJAutoProxy
+@PropertySource("file:C:/visualmix/config/VM_VisualStore_Adm.conf")
 public class ApplicationConfig {
 
 

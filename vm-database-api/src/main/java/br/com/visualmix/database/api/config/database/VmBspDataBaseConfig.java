@@ -23,6 +23,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 import br.com.visualmix.database.api.datasource.IDataSource;
+import br.com.visualmix.database.api.util.DataBaseUtils;
 import br.com.visualmix.database.api.util.DataSourceUtils;
 import br.com.visualmix.database.api.util.PoolDataSourceUtils;
 import jakarta.persistence.EntityManagerFactory;
@@ -30,36 +31,44 @@ import jakarta.persistence.EntityManagerFactory;
 @Configuration
 @EnableJpaRepositories(entityManagerFactoryRef = "BspEntityManager", 
 						transactionManagerRef = "BspTransactionManager",
-		basePackages = {"br.com.visualmix.visualstore.databsp.base"})
-@ConditionalOnProperty(name = "BSP.TIPOCONEXAO")
+		basePackages = {DataBaseUtils.BSP_BASE_PACKAGES})
 public class VmBspDataBaseConfig implements IDataBaseConfig {
 	
-	@Value("${BSP.TIPOCONEXAO}")
+	@Value("${BSP.TIPOCONEXAO:null}")
 	private String connectionType;
 	
-	@Value("${BSP.PORTA}")
+	@Value("${BSP.PORTA:null}")
 	private String port;
 	
-	@Value("${BSP.SERVIDOR: }")
+	@Value("${BSP.SERVIDOR:null}")
 	private String server;
 	
-	@Value("${BSP.DATABASE: }")
+	@Value("${BSP.DATABASE:null}")
 	private String dataBase;
 	
-	@Value("${BSP.LOGIN: }")
+	@Value("${BSP.LOGIN:null}")
 	private String user;
 	
-	@Value("${BSP.SENHA: }")
+	@Value("${BSP.SENHA::null}")
 	private String password;
+	
+	DefaultDataBaseConfig defaultDataBase;
 
 	@Bean
 	@Primary
 	public DataSource dataSource() throws IOException, PropertyVetoException {
-		return newDataSource(this.connectionType, this.port,this.server,this.dataBase,this.user,this.password);
-		
+		try {
+			return newDataSource(this.connectionType, this.port,this.server,this.dataBase,this.user,this.password);
+		} catch (ClassNotFoundException | PropertyVetoException e) {
+			
+			defaultDataBase = new DefaultDataBaseConfig();
+			e.printStackTrace();
+			return defaultDataBase.newDataSource();	
+		}
 	}	
-	private DataSource newDataSource(String connectionType, String port, String server, String dataBase,
-			String user, String password) {
+	
+	
+	private DataSource newDataSource(String connectionType, String port, String server, String dataBase, String user, String password) throws ClassNotFoundException, PropertyVetoException {
 		IDataSource datasource = DataSourceUtils.createDataSource(this.connectionType);
 		ComboPooledDataSource pool = datasource.setPoolDataSourceConfigs(this);
 		PoolDataSourceUtils.setPooldDataSourceConfigs(pool);
@@ -79,7 +88,7 @@ public class VmBspDataBaseConfig implements IDataBaseConfig {
 	public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
 		LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
 		em.setDataSource(dataSource);
-		em.setPackagesToScan("br.com.visualmix.visualstore.databsp.base");
+		em.setPackagesToScan(DataBaseUtils.BSP_BASE_PACKAGES);
 		JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
 		em.setJpaVendorAdapter(vendorAdapter);
 		Properties properties = new Properties();

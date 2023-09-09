@@ -23,6 +23,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 import br.com.visualmix.database.api.datasource.IDataSource;
+import br.com.visualmix.database.api.util.DataBaseUtils;
 import br.com.visualmix.database.api.util.DataSourceUtils;
 import br.com.visualmix.database.api.util.PoolDataSourceUtils;
 import jakarta.persistence.EntityManagerFactory;
@@ -31,36 +32,44 @@ import lombok.Data;
 @Configuration
 @EnableJpaRepositories(entityManagerFactoryRef = "LogEntityManager", 
 					   transactionManagerRef = "LogTransactionManager",
-					   basePackages = {"br.com.visualmix.visualstore.log.base" })
-@ConditionalOnProperty(name = "LOG.TIPOCONEXAO")
+					   basePackages = {DataBaseUtils.LOG_BASE_PACKAGES })
 public class VmLogDataBaseConfig implements IDataBaseConfig {
 	
-	@Value("${LOG.TIPOCONEXAO: }")
+	@Value("${LOG.TIPOCONEXAO:null}")
 	private String connectionType;
 
-	@Value("${LOG.PORTA: }")
+	@Value("${LOG.PORTA:null}")
 	private String port;
 
-	@Value("${LOG.SERVIDOR: }")
+	@Value("${LOG.SERVIDOR:null}")
 	private String server;
 
-	@Value("${LOG.DATABASE: }")
+	@Value("${LOG.DATABASE:null}")
 	private String dataBase;
 
-	@Value("${LOG.LOGIN: }")
+	@Value("${LOG.LOGIN:null}")
 	private String user;
 
-	@Value("${LOG.SENHA: }")
+	@Value("${LOG.SENHA:null}")
 	private String password;
+	
+	DefaultDataBaseConfig defaultDataBase;
 
 	@Bean(name="LogdataSource")
 	public DataSource dataSource() throws IOException, PropertyVetoException {
-		return newDataSource(this.connectionType, this.port,this.server,this.dataBase,this.user,this.password);
-		
+		try {
+			return newDataSource(this.connectionType, this.port,this.server,this.dataBase,this.user,this.password);
+			
+		} catch (ClassNotFoundException | PropertyVetoException e) {
+			
+			defaultDataBase = new DefaultDataBaseConfig();
+			e.printStackTrace();
+			return defaultDataBase.newDataSource();	
+		}
 	}
 
 	private DataSource newDataSource(String connectionType, String port, String server, String dataBase,
-			String user, String password) {
+		String user, String password) throws ClassNotFoundException, PropertyVetoException {
 		IDataSource datasource = DataSourceUtils.createDataSource(this.connectionType);
 		ComboPooledDataSource pool = datasource.setPoolDataSourceConfigs(this);
 		PoolDataSourceUtils.setPooldDataSourceConfigs(pool);
@@ -76,7 +85,7 @@ public class VmLogDataBaseConfig implements IDataBaseConfig {
 	public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
 		LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
 		em.setDataSource(dataSource);
-		em.setPackagesToScan("br.com.visualmix.visualstore.log.base");
+		em.setPackagesToScan(DataBaseUtils.LOG_BASE_PACKAGES);
 		JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
 		em.setJpaVendorAdapter(vendorAdapter);
 		Properties properties = new Properties();

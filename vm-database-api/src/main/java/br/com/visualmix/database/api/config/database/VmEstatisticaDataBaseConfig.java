@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -23,42 +22,50 @@ import org.springframework.transaction.PlatformTransactionManager;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 import br.com.visualmix.database.api.datasource.IDataSource;
+import br.com.visualmix.database.api.util.DataBaseUtils;
 import br.com.visualmix.database.api.util.DataSourceUtils;
 import br.com.visualmix.database.api.util.PoolDataSourceUtils;
 import jakarta.persistence.EntityManagerFactory;
-import lombok.Data;
 
 @Configuration
-@EnableJpaRepositories(entityManagerFactoryRef = "EstatisticaEntityManager", transactionManagerRef = "EstatisticaTransactionManager", basePackages = {
-		"br.com.visualmix.visualstore.estatistica.base" })
-@ConditionalOnProperty(name = "ESTATISTICA.TIPOCONEXAO")
+@EnableJpaRepositories(entityManagerFactoryRef = "EstatisticaEntityManager",
+                       transactionManagerRef = "EstatisticaTransactionManager", 
+                       basePackages = {DataBaseUtils.ESTATISTICA_BASE_PACKAGES})
 public class VmEstatisticaDataBaseConfig implements IDataBaseConfig {
 	
-	@Value("${ESTATISTICA.TIPOCONEXAO}")
+	@Value("${ESTATISTICA.TIPOCONEXAO:null}")
 	private String connectionType;
 
-	@Value("${ESTATISTICA.PORTA}")
+	@Value("${ESTATISTICA.PORTA:null}")
 	private String port;
 
-	@Value("${ESTATISTICA.SERVIDOR}")
+	@Value("${ESTATISTICA.SERVIDOR:null}")
 	private String server;
 
-	@Value("${ESTATISTICA.DATABASE}")
+	@Value("${ESTATISTICA.DATABASE:null}")
 	private String dataBase;
 
-	@Value("${ESTATISTICA.LOGIN}")
+	@Value("${ESTATISTICA.LOGIN:null}")
 	private String user;
 
-	@Value("${ESTATISTICA.SENHA}")
+	@Value("${ESTATISTICA.SENHA:null}")
 	private String password;
+	
+	DefaultDataBaseConfig defaultDataBase;
 	
 	@Bean(name="EstatisticaDataSource")
 	public DataSource dataSource() throws IOException, PropertyVetoException {
-		return newDataSource(this.connectionType, this.port,this.server,this.dataBase,this.user,this.password);
+		try {
+			return newDataSource(this.connectionType, this.port,this.server,this.dataBase,this.user,this.password);
+			
+		} catch (ClassNotFoundException | PropertyVetoException e) {
+			defaultDataBase = new DefaultDataBaseConfig();
+			e.printStackTrace();
+			return defaultDataBase.newDataSource();	
+		}	
 	}
 
-	private DataSource newDataSource(String connectionType, String port, String server, String dataBase,
-			String user, String password) {
+	private DataSource newDataSource(String connectionType, String port, String server, String dataBase, String user, String password) throws ClassNotFoundException, PropertyVetoException {
 		IDataSource datasource = DataSourceUtils.createDataSource(this.connectionType);
 		ComboPooledDataSource pool = datasource.setPoolDataSourceConfigs(this);
 		PoolDataSourceUtils.setPooldDataSourceConfigs(pool);
@@ -74,7 +81,7 @@ public class VmEstatisticaDataBaseConfig implements IDataBaseConfig {
 	public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
 		LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
 		em.setDataSource(dataSource);
-		em.setPackagesToScan("br.com.visualmix.visualstore.estatistica.base");
+		em.setPackagesToScan(DataBaseUtils.ESTATISTICA_BASE_PACKAGES);
 		JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
 		em.setJpaVendorAdapter(vendorAdapter);
 		Properties properties = new Properties();

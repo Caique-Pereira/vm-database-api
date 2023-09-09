@@ -1,5 +1,6 @@
 package br.com.visualmix.database.api.datasource;
 
+import java.beans.PropertyVetoException;
 import java.sql.Connection;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -35,20 +36,15 @@ public class SqlServerDataSource implements IDataSource {
 // }
 
 	@Override
-	public ComboPooledDataSource setPoolDataSourceConfigs(IDataBaseConfig config) {
+	public ComboPooledDataSource setPoolDataSourceConfigs(IDataBaseConfig config) throws ClassNotFoundException, PropertyVetoException {
 		ComboPooledDataSource pool = new ComboPooledDataSource();
-		try {
 			Class.forName(SqlServerDataSource.SQl_SERVER_DRIVER_CLASS);
 			pool.setDriverClass(SqlServerDataSource.SQl_SERVER_DRIVER_CLASS);
 			pool.setJdbcUrl(String.format(SQL_SERVER_JDBC_URL, config.getServer() , config.getPort() , config.getDataBase() , config.getUser(), config.getPassword()));
 			pool.setUser(config.getUser());
 			pool.setPassword(config.getPassword());
 			return pool;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-		
+
 	}
 
 }
