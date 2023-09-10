@@ -33,21 +33,21 @@ public class AspectDataSourceValidator {
 				}
 	        }
 	        
-	        System.out.println("Parametros para conexão com o banco "+ getDataBaseName() + (invalidParameters ? 
-                    "invalidos : " + parametros + " , tentando conexão com o parametros Default"
-                   : "validos : " + parametros ));
+			/*
+			 * System.out.println("Parametros para conexão com o banco "+ getDataBaseName()
+			 * + (invalidParameters ? " invalidos : " + parametros +
+			 * " , tentando conexão com o parametros Default" : "validos : " + parametros
+			 * ));
+			 */
 	    }
 	
 
 
 	private String getDataBaseName() {
-		switch (className) {
-		case "VmBspDataBaseConfig": return "Vm_Databsp";
-		case "VmEstatisticaDataBaseConfig" : return "Vm_Estatistica";
-		case "VmLogDataBaseConfig" : return "Vm_Log";
-		default:
-			throw new IllegalArgumentException("Unexpected value: " + className);
-		}		
+		if (className.contains("VmBspDataBaseConfig"))return "Vm_Databsp";
+		else if (className.contains("VmLogDataBaseConfig")) return "Vm_Log";
+		else if (className.contains("VmEstatisticaDataBaseConfig")) return "Vm_Estatistica";
+		else return "Não Especificado ";		
 	}
 
 }

@@ -1,17 +1,15 @@
 package br.com.visualmix.database.api.config.database;
 
 import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.util.Properties;
 
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
@@ -28,6 +26,7 @@ import br.com.visualmix.database.api.util.PoolDataSourceUtils;
 import jakarta.persistence.EntityManagerFactory;
 
 
+@Configuration
 public class DefaultDataBaseConfig  {
 
 	@Value("${DEFAULT.TIPOCONEXAO}")
@@ -49,50 +48,24 @@ public class DefaultDataBaseConfig  {
 	private String password;
 
 	
-	public DataSource newDataSource() {
-		try {
+	/*
+	 * public IDataSource newDataSource() { IDataSource datasource =
+	 * DataSourceUtils.createDataSource(this.connectionType); // pool =
+	 * datasource.setPoolDataSourceConfigs(this); //
+	 * PoolDataSourceUtils.setPooldDataSourceConfigs(pool); return datasource;
+	 * 
+	 * }
+	 */
 
-			IDataSource datasource = DataSourceUtils.createDataSource(this.connectionType);
-			ComboPooledDataSource pool;
-			pool = datasource.setPoolDataSourceConfigs((IDataBaseConfig) this);
-			PoolDataSourceUtils.setPooldDataSourceConfigs(pool);
-			return pool;
-
-		} catch (ClassNotFoundException | PropertyVetoException e) {
-			e.printStackTrace();
-			return null;
-		}
+	public void setDefaultConfig(IDataBaseConfig dataBaseConfig) {
+		dataBaseConfig.setConnectionType(this.connectionType);
+		dataBaseConfig.setDataBase(this.dataBase);
+		dataBaseConfig.setPassword(this.password);
+		dataBaseConfig.setPort(this.port);
+		dataBaseConfig.setUser(this.user);
+		dataBaseConfig.setServer(this.server);	
 	}
 
-	@Bean(name = "JdbcTemplate")
-	public JdbcTemplate getJdbcTemplate(@Qualifier("dataSource") DataSource dataSource) {
-		return new JdbcTemplate(dataSource);
-	}
 
-	@Bean(name = "EntityManager")
-	public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
-		LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-		em.setDataSource(dataSource);
-		em.setPackagesToScan(DataBaseUtils.BSP_BASE_PACKAGES);
-		JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-		em.setJpaVendorAdapter(vendorAdapter);
-		Properties properties = new Properties();
-		properties.setProperty("hibernate.hbm2ddl.auto", "none");
-		em.setJpaProperties(properties);
-		return em;
-	}
-
-	@Bean(name = "TransactionManager")
-	public PlatformTransactionManager transactionManager(@Qualifier("EntityManager") EntityManagerFactory emf) {
-		JpaTransactionManager transactionManager = new JpaTransactionManager();
-		transactionManager.setEntityManagerFactory(emf);
-		return transactionManager;
-	}
-	public String getConnectionType() {return connectionType;}
-	public String getPort() {return port;}
-	public String getServer() {return server;}
-	public String getDataBase() {return dataBase;}
-	public String getUser() {return user;}
-	public String getPassword() {return password;}
 
 }

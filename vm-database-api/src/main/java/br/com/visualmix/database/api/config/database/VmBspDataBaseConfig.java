@@ -6,6 +6,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -52,23 +53,32 @@ public class VmBspDataBaseConfig implements IDataBaseConfig {
 	@Value("${BSP.SENHA::null}")
 	private String password;
 	
+	@Autowired
 	DefaultDataBaseConfig defaultDataBase;
 
+	@Override
 	@Bean
 	@Primary
-	public DataSource dataSource() throws IOException, PropertyVetoException {
+	public DataSource dataSource() {
+		DataSource datasource; 
 		try {
-			return newDataSource(this.connectionType, this.port,this.server,this.dataBase,this.user,this.password);
-		} catch (ClassNotFoundException | PropertyVetoException e) {
-			
-			defaultDataBase = new DefaultDataBaseConfig();
-			e.printStackTrace();
-			return defaultDataBase.newDataSource();	
+			datasource = newDataSource();
+		} catch (Exception e) { 
+			 try {
+		            setDefaultConfig();
+		            datasource = newDataSource();
+		            return datasource;
+		        } catch (Exception innerException) {
+		        	return null;
+  		        }
 		}
+		return datasource;
 	}	
 	
 	
-	private DataSource newDataSource(String connectionType, String port, String server, String dataBase, String user, String password) throws ClassNotFoundException, PropertyVetoException {
+	
+	private DataSource newDataSource() throws ClassNotFoundException, PropertyVetoException,NullPointerException {
+		if(this.connectionType.equals("null")) throw new NullPointerException("Parametro BSP.TIPOCONEXAO nulo");
 		IDataSource datasource = DataSourceUtils.createDataSource(this.connectionType);
 		ComboPooledDataSource pool = datasource.setPoolDataSourceConfigs(this);
 		PoolDataSourceUtils.setPooldDataSourceConfigs(pool);
@@ -76,16 +86,18 @@ public class VmBspDataBaseConfig implements IDataBaseConfig {
 	}
 
 
+	@Override
 	@Bean(name="BspJdbcTemplate")
 	@Primary
-	public JdbcTemplate getJdbcTemplate(@Qualifier("BspdataSource") DataSource dataSource) {
+	public JdbcTemplate getJdbcTemplate(@Qualifier("dataSource") DataSource dataSource) {
 		return new JdbcTemplate(dataSource);
 	}
 	
 
+	@Override
 	@Bean(name="BspEntityManager")
 	@Primary
-	public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
+	public LocalContainerEntityManagerFactoryBean entityManagerFactory(@Qualifier("dataSource") DataSource dataSource) {
 		LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
 		em.setDataSource(dataSource);
 		em.setPackagesToScan(DataBaseUtils.BSP_BASE_PACKAGES);
@@ -97,6 +109,7 @@ public class VmBspDataBaseConfig implements IDataBaseConfig {
 		return em;
 	}
 	
+	@Override
 	@Bean(name="BspTransactionManager")
 	@Primary
 	public PlatformTransactionManager transactionManager(@Qualifier("BspEntityManager") EntityManagerFactory emf) {
@@ -106,16 +119,34 @@ public class VmBspDataBaseConfig implements IDataBaseConfig {
 	 
 	    return transactionManager;
 	}
-	
-	public String getConnectionType() {return connectionType;}
-	public String getPort() {return port;}
-	public String getServer() {return server;}
-	public String getDataBase() {return dataBase;}
-	public String getUser() {return user;}
-	public String getPassword() {return password;}
-	
+		
+	public void setDefaultConfig() {
+		defaultDataBase.setDefaultConfig(this);
+	}
 
-	
-	
+	@Override
+	public String getConnectionType() {return connectionType;}
+	@Override
+	public String getPort() {return port;}
+	@Override
+	public String getServer() {return server;}
+	@Override
+	public String getDataBase() {return dataBase;}
+	@Override
+	public String getUser() {return user;}
+	@Override
+	public String getPassword() {return password;}
+	@Override
+	public void setConnectionType(String connectionType) {this.connectionType = connectionType;}
+	@Override
+	public void setPort(String port) {this.port=port;}
+	@Override
+	public void setServer(String server){this.server=server;}
+	@Override
+	public void setDataBase(String dataBase) {this.dataBase=dataBase;}
+	@Override
+	public void setUser(String user) {this.user = user;}
+	@Override
+	public void setPassword(String password) {this.password=password;};
 	
 }

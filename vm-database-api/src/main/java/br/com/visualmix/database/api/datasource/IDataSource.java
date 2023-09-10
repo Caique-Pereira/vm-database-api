@@ -11,5 +11,6 @@ import br.com.visualmix.database.api.config.database.IDataBaseConfig;
 public interface IDataSource {
 	
 	ComboPooledDataSource setPoolDataSourceConfigs(IDataBaseConfig config) throws ClassNotFoundException, PropertyVetoException;
+
 	
 }

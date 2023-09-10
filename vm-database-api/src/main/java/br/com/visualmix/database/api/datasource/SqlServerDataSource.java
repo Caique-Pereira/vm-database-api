@@ -16,7 +16,6 @@ public class SqlServerDataSource implements IDataSource {
 	private static final String SQL_SERVER_JDBC_URL = "jdbc:sqlserver://%s:%s;databaseName=%s;user=%s;password=%s;trustServerCertificate=true";
 
 
-
 //	public Connection openConexao() {
 //		String jdbcUrl = String.format(SQL_SERVER_JDBC_URL, server, port, dataBase, user, password);
 //		try {

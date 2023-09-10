@@ -1,17 +1,14 @@
 package br.com.visualmix.database.api.config.database;
 
 import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.util.Properties;
 
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -27,7 +24,6 @@ import br.com.visualmix.database.api.util.DataBaseUtils;
 import br.com.visualmix.database.api.util.DataSourceUtils;
 import br.com.visualmix.database.api.util.PoolDataSourceUtils;
 import jakarta.persistence.EntityManagerFactory;
-import lombok.Data;
 
 @Configuration
 @EnableJpaRepositories(entityManagerFactoryRef = "LogEntityManager", 
@@ -56,20 +52,18 @@ public class VmLogDataBaseConfig implements IDataBaseConfig {
 	DefaultDataBaseConfig defaultDataBase;
 
 	@Bean(name="LogdataSource")
-	public DataSource dataSource() throws IOException, PropertyVetoException {
+	public DataSource dataSource() {
+		DataSource datasource; 
 		try {
-			return newDataSource(this.connectionType, this.port,this.server,this.dataBase,this.user,this.password);
-			
-		} catch (ClassNotFoundException | PropertyVetoException e) {
-			
-			defaultDataBase = new DefaultDataBaseConfig();
-			e.printStackTrace();
-			return defaultDataBase.newDataSource();	
+			datasource = newDataSource();
+		} catch (Exception e) { 
+			return null;
 		}
+		return datasource;
+		
 	}
 
-	private DataSource newDataSource(String connectionType, String port, String server, String dataBase,
-		String user, String password) throws ClassNotFoundException, PropertyVetoException {
+	private DataSource newDataSource() throws ClassNotFoundException, PropertyVetoException {
 		IDataSource datasource = DataSourceUtils.createDataSource(this.connectionType);
 		ComboPooledDataSource pool = datasource.setPoolDataSourceConfigs(this);
 		PoolDataSourceUtils.setPooldDataSourceConfigs(pool);
@@ -102,11 +96,32 @@ public class VmLogDataBaseConfig implements IDataBaseConfig {
 
 		return transactionManager;
 	}
+	
+	@Override
 	public String getConnectionType() {return connectionType;}
+	@Override
 	public String getPort() {return port;}
+	@Override
 	public String getServer() {return server;}
+	@Override
 	public String getDataBase() {return dataBase;}
+	@Override
 	public String getUser() {return user;}
+	@Override
 	public String getPassword() {return password;}
+	@Override
+	public void setConnectionType(String connectionType) {this.connectionType = connectionType;}
+	@Override
+	public void setPort(String port) {this.port=port;}
+	@Override
+	public void setServer(String server){this.server=server;}
+	@Override
+	public void setDataBase(String dataBase) {this.dataBase=dataBase;}
+	@Override
+	public void setUser(String user) {this.user = user;}
+	@Override
+	public void setPassword(String password) {this.password=password;};
+
+
 
 }
