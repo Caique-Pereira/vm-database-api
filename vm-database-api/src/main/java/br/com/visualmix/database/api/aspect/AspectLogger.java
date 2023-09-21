@@ -28,7 +28,8 @@ public class AspectLogger {
         className = joinPoint.getTarget().getClass().getSimpleName() == null ? " " :  joinPoint.getTarget().getClass().getSimpleName();
 		
 		for (Object x : args) {
-			parametros += "'" + x.toString() + "' | ";
+			if(x != null)
+				parametros += "'" + x.toString() + "' | ";
 		}
 
 		System.out.println("Entrou no Metodo " + methodName + " Da classe " + className + (!parametros.equals("") ? " como valor de parametros :" + parametros : ""));

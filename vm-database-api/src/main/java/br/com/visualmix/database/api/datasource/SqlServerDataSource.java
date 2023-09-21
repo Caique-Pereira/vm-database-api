@@ -5,7 +5,7 @@ import java.sql.Connection;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
-import br.com.visualmix.database.api.config.database.IDataBaseConfig;
+import br.com.visualmix.database.api.config.database.ADataBaseConfig;
 import lombok.Data;
 
 @Data
@@ -35,8 +35,8 @@ public class SqlServerDataSource implements IDataSource {
 // }
 
 	@Override
-	public ComboPooledDataSource setPoolDataSourceConfigs(IDataBaseConfig config) throws ClassNotFoundException, PropertyVetoException {
-		ComboPooledDataSource pool = new ComboPooledDataSource();
+	public ComboPooledDataSource setPoolDataSourceConfigs(ADataBaseConfig config) throws ClassNotFoundException, PropertyVetoException {
+		   ComboPooledDataSource pool = new ComboPooledDataSource();
 			Class.forName(SqlServerDataSource.SQl_SERVER_DRIVER_CLASS);
 			pool.setDriverClass(SqlServerDataSource.SQl_SERVER_DRIVER_CLASS);
 			pool.setJdbcUrl(String.format(SQL_SERVER_JDBC_URL, config.getServer() , config.getPort() , config.getDataBase() , config.getUser(), config.getPassword()));

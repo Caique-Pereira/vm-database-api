@@ -6,24 +6,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import br.com.visualmix.database.api.service.CasadinhaService;
-import br.com.visualmix.visualstore.databsp.md.dtos.CasadinhaDTO;
+import br.com.visualmix.visualstore.databsp.md.dtos.ProdutosDTO;
+import br.com.visualmix.database.api.service.ProdutoService;
 
 @RestController
-@RequestMapping("api/casadinhas")
-public class CasadinhaController {
+@RequestMapping("api/produtos")
+public class ProdutoController {
 
 	@Autowired
-    public CasadinhaService service;
+    public ProdutoService service;
     
 	 @GetMapping("/listAll")
-	 public List<CasadinhaDTO> getAllMarrieds() {
-	        return service.getAllMarrieds();
+	 public List<ProdutosDTO> getAllProducts() {
+	        return service.getAllProducts();
 	    }
 	 
 	 @GetMapping("/listLast")
-	 public CasadinhaDTO getLastMarried() {
-	        return service.getLastMarried();
+	 public ProdutosDTO getLastProduct() {
+	        return service.getLastProduct();
 	    }
+	
 }

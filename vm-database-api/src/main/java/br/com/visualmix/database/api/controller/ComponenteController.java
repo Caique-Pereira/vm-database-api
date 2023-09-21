@@ -7,23 +7,24 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.visualmix.database.api.service.CasadinhaService;
-import br.com.visualmix.visualstore.databsp.md.dtos.CasadinhaDTO;
+import br.com.visualmix.database.api.service.ComponenteService;
+import br.com.visualmix.visualstore.databsp.md.dtos.ComponentesDTO;
 
 @RestController
-@RequestMapping("api/casadinhas")
-public class CasadinhaController {
+@RequestMapping("api/componentes")
+public class ComponenteController {
 
 	@Autowired
-    public CasadinhaService service;
+    public ComponenteService service;
     
 	 @GetMapping("/listAll")
-	 public List<CasadinhaDTO> getAllMarrieds() {
-	        return service.getAllMarrieds();
+	 public List<ComponentesDTO> getAllComponents() {
+	        return service.getAllComponents();
 	    }
 	 
 	 @GetMapping("/listLast")
-	 public CasadinhaDTO getLastMarried() {
-	        return service.getLastMarried();
+	 public ComponentesDTO getLastComponent() {
+	        return service.getLastComponent();
 	    }
+	
 }

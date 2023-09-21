@@ -27,6 +27,16 @@ public class Funcoes {
 		}
 	}
 
+	public static void reReadFileConf() {
+		try {
+			props = new Properties();
+			FileInputStream file = new FileInputStream(ApplicationConfig.CONFIG_PATH + ApplicationConfig.CONFIG_FILE);
+			props.load(file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static String getParam(String key, String defaultValue) {
 		return props.getProperty(key, defaultValue);
 	}

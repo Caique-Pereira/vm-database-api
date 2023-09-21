@@ -1,14 +1,19 @@
 package br.com.visualmix.database.api.config.database;
 
 import java.beans.PropertyVetoException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.health.Health;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -20,6 +25,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 import br.com.visualmix.database.api.datasource.IDataSource;
+import br.com.visualmix.database.api.manager.DataSourceManager;
+import br.com.visualmix.database.api.manager.health.EstatisticaDataBaseHealthCheck;
+import br.com.visualmix.database.api.manager.health.LogDataBaseHealthCheck;
 import br.com.visualmix.database.api.util.DataBaseUtils;
 import br.com.visualmix.database.api.util.DataSourceUtils;
 import br.com.visualmix.database.api.util.PoolDataSourceUtils;
@@ -29,7 +37,7 @@ import jakarta.persistence.EntityManagerFactory;
 @EnableJpaRepositories(entityManagerFactoryRef = "LogEntityManager", 
 					   transactionManagerRef = "LogTransactionManager",
 					   basePackages = {DataBaseUtils.LOG_BASE_PACKAGES })
-public class VmLogDataBaseConfig implements IDataBaseConfig {
+public class VmLogDataBaseConfig extends ADataBaseConfig {
 	
 	@Value("${LOG.TIPOCONEXAO:null}")
 	private String connectionType;
@@ -49,32 +57,51 @@ public class VmLogDataBaseConfig implements IDataBaseConfig {
 	@Value("${LOG.SENHA:null}")
 	private String password;
 	
+	@Autowired
 	DefaultDataBaseConfig defaultDataBase;
+	
+	@Autowired
+	@Lazy
+	LogDataBaseHealthCheck health;
+	
+	DataSource datasource; 
 
+	@Override
 	@Bean(name="LogdataSource")
 	public DataSource dataSource() {
-		DataSource datasource; 
 		try {
 			datasource = newDataSource();
 		} catch (Exception e) { 
-			return null;
+			 try {
+		            setDefaultConfig();
+		            datasource = newDataSource();
+		        } catch (Exception e2) {
+		        	  try {
+		        			setFallBackConfig();
+							datasource = newDataSource();
+						} catch (Exception e3) {
+				
+					}
+  		        }
 		}
 		return datasource;
-		
-	}
+	}	
 
-	private DataSource newDataSource() throws ClassNotFoundException, PropertyVetoException {
+	private DataSource newDataSource() throws ClassNotFoundException, PropertyVetoException,NullPointerException {
+		variableValidation();
 		IDataSource datasource = DataSourceUtils.createDataSource(this.connectionType);
 		ComboPooledDataSource pool = datasource.setPoolDataSourceConfigs(this);
 		PoolDataSourceUtils.setPooldDataSourceConfigs(pool);
 		return pool;
 	}
-
+	
+	@Override
 	@Bean(name = "LogJdbcTemplate")
 	public JdbcTemplate getJdbcTemplate(@Qualifier("LogdataSource") DataSource dataSource) {
 		return new JdbcTemplate(dataSource);
 	}
 
+	@Override
 	@Bean(name = "LogEntityManager")
 	public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
 		LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
@@ -88,13 +115,21 @@ public class VmLogDataBaseConfig implements IDataBaseConfig {
 		return em;
 	}
 
+	
+	@Override
 	@Bean(name = "LogTransactionManager")
 	public PlatformTransactionManager transactionManager(@Qualifier("LogEntityManager") EntityManagerFactory emf) {
-
 		JpaTransactionManager transactionManager = new JpaTransactionManager();
 		transactionManager.setEntityManagerFactory(emf);
-
 		return transactionManager;
+	}
+	
+	public void setDefaultConfig() {
+		defaultDataBase.setDefaultConfig(this);
+	}
+ 
+	public void setFallBackConfig() {
+		FallBackH2DataBaseConfig.setfallBacktConfig(this);
 	}
 	
 	@Override
@@ -120,7 +155,22 @@ public class VmLogDataBaseConfig implements IDataBaseConfig {
 	@Override
 	public void setUser(String user) {this.user = user;}
 	@Override
-	public void setPassword(String password) {this.password=password;};
+	public void setPassword(String password) {this.password=password;}
+
+	@Override
+	public Health health() {
+		return health.checkHealth();
+	};
+	
+	
+	
+	private void variableValidation() {
+		if("null".equals(this.connectionType) || "null".equals(this.port) ||  "null".equals(this.server)
+		||  "null".equals(this.dataBase) || "null".equals(this.user) || "null".equals(this.password)) 
+		{
+			throw new NullPointerException("Erro ao configurar Banco Log, uma ou mais variaveis de conexão são nulas");
+		}
+	}
 
 
 

@@ -1,7 +1,10 @@
 package br.com.visualmix.database.api.config.database;
 
 import java.beans.PropertyVetoException;
-import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -9,9 +12,10 @@ import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.actuate.health.Health;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,6 +28,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 import br.com.visualmix.database.api.datasource.IDataSource;
+import br.com.visualmix.database.api.manager.health.BspDataBaseHealthCheck;
+import br.com.visualmix.database.api.manager.health.LogDataBaseHealthCheck;
 import br.com.visualmix.database.api.util.DataBaseUtils;
 import br.com.visualmix.database.api.util.DataSourceUtils;
 import br.com.visualmix.database.api.util.PoolDataSourceUtils;
@@ -33,7 +39,7 @@ import jakarta.persistence.EntityManagerFactory;
 @EnableJpaRepositories(entityManagerFactoryRef = "BspEntityManager", 
 						transactionManagerRef = "BspTransactionManager",
 		basePackages = {DataBaseUtils.BSP_BASE_PACKAGES})
-public class VmBspDataBaseConfig implements IDataBaseConfig {
+public class VmBspDataBaseConfig extends ADataBaseConfig {
 	
 	@Value("${BSP.TIPOCONEXAO:null}")
 	private String connectionType;
@@ -55,41 +61,47 @@ public class VmBspDataBaseConfig implements IDataBaseConfig {
 	
 	@Autowired
 	DefaultDataBaseConfig defaultDataBase;
+	
+	@Autowired
+	@Lazy
+	BspDataBaseHealthCheck health;
+	
+	DataSource datasource; 
 
 	@Override
-	@Bean
+	@Bean(name="BspDataSource")
 	@Primary
 	public DataSource dataSource() {
-		DataSource datasource; 
 		try {
 			datasource = newDataSource();
 		} catch (Exception e) { 
 			 try {
 		            setDefaultConfig();
 		            datasource = newDataSource();
-		            return datasource;
-		        } catch (Exception innerException) {
-		        	return null;
+		        } catch (Exception e2) {
+		        	  try {
+		        			setFallBackConfig();
+							datasource = newDataSource();
+						} catch (Exception e3) {
+				
+					}
   		        }
 		}
 		return datasource;
 	}	
 	
-	
-	
 	private DataSource newDataSource() throws ClassNotFoundException, PropertyVetoException,NullPointerException {
-		if(this.connectionType.equals("null")) throw new NullPointerException("Parametro BSP.TIPOCONEXAO nulo");
+		variableValidation();
 		IDataSource datasource = DataSourceUtils.createDataSource(this.connectionType);
 		ComboPooledDataSource pool = datasource.setPoolDataSourceConfigs(this);
 		PoolDataSourceUtils.setPooldDataSourceConfigs(pool);
 		return pool;
 	}
-
-
+	
 	@Override
 	@Bean(name="BspJdbcTemplate")
 	@Primary
-	public JdbcTemplate getJdbcTemplate(@Qualifier("dataSource") DataSource dataSource) {
+	public JdbcTemplate getJdbcTemplate(@Qualifier("BspDataSource") DataSource dataSource) {
 		return new JdbcTemplate(dataSource);
 	}
 	
@@ -97,7 +109,7 @@ public class VmBspDataBaseConfig implements IDataBaseConfig {
 	@Override
 	@Bean(name="BspEntityManager")
 	@Primary
-	public LocalContainerEntityManagerFactoryBean entityManagerFactory(@Qualifier("dataSource") DataSource dataSource) {
+	public LocalContainerEntityManagerFactoryBean entityManagerFactory(@Qualifier("BspDataSource") DataSource dataSource) {
 		LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
 		em.setDataSource(dataSource);
 		em.setPackagesToScan(DataBaseUtils.BSP_BASE_PACKAGES);
@@ -123,7 +135,12 @@ public class VmBspDataBaseConfig implements IDataBaseConfig {
 	public void setDefaultConfig() {
 		defaultDataBase.setDefaultConfig(this);
 	}
-
+ 
+	public void setFallBackConfig() {
+		FallBackH2DataBaseConfig.setfallBacktConfig(this);
+	}
+	
+	
 	@Override
 	public String getConnectionType() {return connectionType;}
 	@Override
@@ -147,6 +164,22 @@ public class VmBspDataBaseConfig implements IDataBaseConfig {
 	@Override
 	public void setUser(String user) {this.user = user;}
 	@Override
-	public void setPassword(String password) {this.password=password;};
+	public void setPassword(String password) {this.password=password;}
+
+
+
+	@Override
+	public Health health() {
+		return health.checkHealth();
+	};
+	
+	
+	private void variableValidation() {
+		if("null".equals(this.connectionType) || "null".equals(this.port) ||  "null".equals(this.server)
+		||  "null".equals(this.dataBase) || "null".equals(this.user) || "null".equals(this.password)) 
+		{
+			throw new NullPointerException("Erro ao configurar Banco Bsp, uma ou mais variaveis de conexão são nulas");
+		}
+	}
 	
 }
