@@ -21,7 +21,6 @@ public class OracleDataSource implements IDataSource  {
 			pool.setUser(config.getUser());
 			pool.setPassword(config.getPassword());
 			return pool;
-
 	}
 
 

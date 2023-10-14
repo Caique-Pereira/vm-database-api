@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>br.com.visualmix.visualmix</groupId>
 	<artifactId>vm-database-api</artifactId>
-	<version>0.0.2</version>
+	<version>0.0.3</version>
 	<name>vm-database-api</name>
 	<description>API TO PROVIDE BANK ACESS</description>
 	<properties>
@@ -89,15 +89,20 @@
 			<version>1.9.8.RC1</version>
 		</dependency>
 
-		
-
 		<dependency>
 			<groupId>br.com.visualmix.visualstore</groupId>
 			<artifactId>vm-databsp-md</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.0.1</version>
 		</dependency>
 		
-			<dependency>
+		<dependency>
+			<groupId>br.com.visualmix.visualstore</groupId>
+			<artifactId>vm-service-db</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+		
+	
+		<dependency>
 			<groupId>br.com.visualmix.libs</groupId>
 			<artifactId>ojdbc6</artifactId>
 			<version>1.0</version>
@@ -139,6 +144,7 @@
 
 
 	<build>
+		<finalName>vm-database-api</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

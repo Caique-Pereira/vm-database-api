@@ -34,29 +34,31 @@ import br.com.visualmix.database.api.util.DataBaseUtils;
 import br.com.visualmix.database.api.util.DataSourceUtils;
 import br.com.visualmix.database.api.util.PoolDataSourceUtils;
 import jakarta.persistence.EntityManagerFactory;
+import lombok.ToString;
 
 @Configuration
 @EnableJpaRepositories(entityManagerFactoryRef = "BspEntityManager", 
 						transactionManagerRef = "BspTransactionManager",
 		basePackages = {DataBaseUtils.BSP_BASE_PACKAGES})
+@ToString
 public class VmBspDataBaseConfig extends ADataBaseConfig {
 	
-	@Value("${BSP.TIPOCONEXAO:null}")
+	@Value("${BSP.TIPOCONEXAO: }")
 	private String connectionType;
 	
-	@Value("${BSP.PORTA:null}")
+	@Value("${BSP.PORTA: }")
 	private String port;
 	
-	@Value("${BSP.SERVIDOR:null}")
+	@Value("${BSP.SERVIDOR: }")
 	private String server;
 	
-	@Value("${BSP.DATABASE:null}")
+	@Value("${BSP.DATABASE: }")
 	private String dataBase;
 	
-	@Value("${BSP.LOGIN:null}")
+	@Value("${BSP.LOGIN: }")
 	private String user;
 	
-	@Value("${BSP.SENHA::null}")
+	@Value("${BSP.SENHA: }")
 	private String password;
 	
 	@Autowired
@@ -75,15 +77,19 @@ public class VmBspDataBaseConfig extends ADataBaseConfig {
 		try {
 			datasource = newDataSource();
 		} catch (Exception e) { 
+			e.printStackTrace();
+        	System.out.println(e.getMessage());
 			 try {
 		            setDefaultConfig();
 		            datasource = newDataSource();
 		        } catch (Exception e2) {
+		        	e2.printStackTrace();
+		        	System.out.println(e2.getMessage());
 		        	  try {
 		        			setFallBackConfig();
 							datasource = newDataSource();
 						} catch (Exception e3) {
-				
+							e3.printStackTrace();
 					}
   		        }
 		}
@@ -91,7 +97,7 @@ public class VmBspDataBaseConfig extends ADataBaseConfig {
 	}	
 	
 	private DataSource newDataSource() throws ClassNotFoundException, PropertyVetoException,NullPointerException {
-		variableValidation();
+		DataBaseUtils.fieldsValidation(this);
 		IDataSource datasource = DataSourceUtils.createDataSource(this.connectionType);
 		ComboPooledDataSource pool = datasource.setPoolDataSourceConfigs(this);
 		PoolDataSourceUtils.setPooldDataSourceConfigs(pool);
@@ -166,20 +172,10 @@ public class VmBspDataBaseConfig extends ADataBaseConfig {
 	@Override
 	public void setPassword(String password) {this.password=password;}
 
-
-
 	@Override
 	public Health health() {
 		return health.checkHealth();
 	};
 	
-	
-	private void variableValidation() {
-		if("null".equals(this.connectionType) || "null".equals(this.port) ||  "null".equals(this.server)
-		||  "null".equals(this.dataBase) || "null".equals(this.user) || "null".equals(this.password)) 
-		{
-			throw new NullPointerException("Erro ao configurar Banco Bsp, uma ou mais variaveis de conexão são nulas");
-		}
-	}
 	
 }

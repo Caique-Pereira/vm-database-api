@@ -32,33 +32,32 @@ import br.com.visualmix.database.api.util.DataBaseUtils;
 import br.com.visualmix.database.api.util.DataSourceUtils;
 import br.com.visualmix.database.api.util.PoolDataSourceUtils;
 import jakarta.persistence.EntityManagerFactory;
+import lombok.ToString;
 
 @Configuration
 @EnableJpaRepositories(entityManagerFactoryRef = "LogEntityManager", 
 					   transactionManagerRef = "LogTransactionManager",
 					   basePackages = {DataBaseUtils.LOG_BASE_PACKAGES })
+@ToString
 public class VmLogDataBaseConfig extends ADataBaseConfig {
 	
-	@Value("${LOG.TIPOCONEXAO:null}")
+	@Value("${LOG.TIPOCONEXAO: }")
 	private String connectionType;
 
-	@Value("${LOG.PORTA:null}")
+	@Value("${LOG.PORTA: }")
 	private String port;
 
-	@Value("${LOG.SERVIDOR:null}")
+	@Value("${LOG.SERVIDOR: }")
 	private String server;
 
-	@Value("${LOG.DATABASE:null}")
+	@Value("${LOG.DATABASE: }")
 	private String dataBase;
 
-	@Value("${LOG.LOGIN:null}")
+	@Value("${LOG.LOGIN: }")
 	private String user;
 
-	@Value("${LOG.SENHA:null}")
+	@Value("${LOG.SENHA: }")
 	private String password;
-	
-	@Autowired
-	DefaultDataBaseConfig defaultDataBase;
 	
 	@Autowired
 	@Lazy
@@ -71,24 +70,24 @@ public class VmLogDataBaseConfig extends ADataBaseConfig {
 	public DataSource dataSource() {
 		try {
 			datasource = newDataSource();
-		} catch (Exception e) { 
-			 try {
-		            setDefaultConfig();
-		            datasource = newDataSource();
-		        } catch (Exception e2) {
-		        	  try {
-		        			setFallBackConfig();
-							datasource = newDataSource();
-						} catch (Exception e3) {
-				
-					}
-  		        }
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+        	System.out.println(e.getMessage());
+			try {
+				setFallBackConfig();
+				datasource = newDataSource();
+			} catch (Exception e2) {
+				e2.printStackTrace();
+	        	System.out.println(e2.getMessage());
+
+			}
 		}
 		return datasource;
 	}	
 
 	private DataSource newDataSource() throws ClassNotFoundException, PropertyVetoException,NullPointerException {
-		variableValidation();
+		DataBaseUtils.fieldsValidation(this);
 		IDataSource datasource = DataSourceUtils.createDataSource(this.connectionType);
 		ComboPooledDataSource pool = datasource.setPoolDataSourceConfigs(this);
 		PoolDataSourceUtils.setPooldDataSourceConfigs(pool);
@@ -124,10 +123,6 @@ public class VmLogDataBaseConfig extends ADataBaseConfig {
 		return transactionManager;
 	}
 	
-	public void setDefaultConfig() {
-		defaultDataBase.setDefaultConfig(this);
-	}
- 
 	public void setFallBackConfig() {
 		FallBackH2DataBaseConfig.setfallBacktConfig(this);
 	}
@@ -162,16 +157,4 @@ public class VmLogDataBaseConfig extends ADataBaseConfig {
 		return health.checkHealth();
 	};
 	
-	
-	
-	private void variableValidation() {
-		if("null".equals(this.connectionType) || "null".equals(this.port) ||  "null".equals(this.server)
-		||  "null".equals(this.dataBase) || "null".equals(this.user) || "null".equals(this.password)) 
-		{
-			throw new NullPointerException("Erro ao configurar Banco Log, uma ou mais variaveis de conexão são nulas");
-		}
-	}
-
-
-
 }

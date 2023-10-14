@@ -13,7 +13,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Configuration
 @EnableCaching(mode = AdviceMode.ASPECTJ)
 @EnableAspectJAutoProxy
-@PropertySource("file:C:/visualmix/config/VM_VisualStore_Adm.conf")
+@PropertySource("file:/app/config/VM_VisualStore_Adm.conf")
 @EnableScheduling
 public class ApplicationConfig {
     public final static String CONFIG_PATH = System.getenv("VMIX_HOME");

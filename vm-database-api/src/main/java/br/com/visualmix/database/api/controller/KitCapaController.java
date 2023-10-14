@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.visualmix.database.api.service.KitCapaService;
 import br.com.visualmix.visualstore.databsp.md.dtos.KitcapaDTO;
+import br.com.visualmix.visualstore.db.services.bsp.KitCapaService;
 
 @RestController
 @RequestMapping("api/kitCapas")

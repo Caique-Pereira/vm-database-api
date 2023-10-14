@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.visualmix.database.api.service.AcessoPerfilService;
 import br.com.visualmix.visualstore.databsp.md.dtos.AcessoPerfilDTO;
+import br.com.visualmix.visualstore.db.services.bsp.AcessoPerfilService;
 
 @RestController
 @RequestMapping("api/acessoPerfil")

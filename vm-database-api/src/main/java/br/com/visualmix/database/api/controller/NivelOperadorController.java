@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.visualmix.database.api.service.NivelOperadorService;
 import br.com.visualmix.visualstore.databsp.md.dtos.NiveisOperadoresDTO;
+import br.com.visualmix.visualstore.db.services.bsp.NivelOperadorService;
 
 @RestController
 @RequestMapping("api/niveisOperadores")

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<property file="/app/config/VM_VisualStore_Adm.conf" />
+
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+        	<fileNamePattern>/app/logs/database-console-info.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+        	<maxHistory>7</maxHistory>
+	        <maxFileSize>200MB</maxFileSize>
+	        <totalSizeCap>20GB</totalSizeCap> 
+    	</rollingPolicy>
+    	
+		<encoder>
+    	    <pattern>%d{dd-MM-yyyy HH:mm:ss.SSS} %-5level .%M - %msg%n</pattern>
+    	</encoder>
+	</appender>
+	
+	<!-- Arquivo de Log no qual a saida é formatada pro logstash -->
+	<appender name="LOGSTASH" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>/app/logs/database-logstash.log</file>
+		
+		<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<fileNamePattern>/app/logs/database-logstash.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+			<maxHistory>7</maxHistory>
+	        <maxFileSize>200MB</maxFileSize>
+	        <totalSizeCap>20GB</totalSizeCap> 
+		</rollingPolicy>
+		
+		 <encoder>
+    	    <pattern>%d{dd-MM-yyyy HH:mm:ss.SSS} %-5level .%M - %msg%n</pattern>
+    	</encoder>
+	</appender>
+	
+	<!-- Arquivo de Log para toda a saida de info -->
+	<appender name="LOG-INFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+	    <file>/app/logs/process-log-info.log</file>
+    
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>INFO</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+    
+    	<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+        	<fileNamePattern>/app/logs/database-log-info.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+        	<maxHistory>7</maxHistory>
+	        <maxFileSize>200MB</maxFileSize>
+	        <totalSizeCap>20GB</totalSizeCap> 
+    	</rollingPolicy>
+     
+	    <encoder>
+    	    <pattern>%d{dd-MM-yyyy HH:mm:ss.SSS} %-5level .%M - %msg%n</pattern>
+    	</encoder>
+	</appender> 
+	
+	<!-- Arquivo de Log para toda a saida de warn -->
+	<appender name="LOG-WARN" class="ch.qos.logback.core.rolling.RollingFileAppender">
+	    <file>/app/logs/database-log-warn.log</file>
+    
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>WARN</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+    
+    	<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+        	<fileNamePattern>/app/logs/database-log-warn.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+        	<maxHistory>7</maxHistory>
+	        <maxFileSize>200MB</maxFileSize>
+	        <totalSizeCap>20GB</totalSizeCap> 
+    	</rollingPolicy>
+     
+	   <encoder>
+    	    <pattern>%d{dd-MM-yyyy HH:mm:ss.SSS} %-5level .%M - %msg%n</pattern>
+    	</encoder>
+	</appender> 
+	
+	
+	<!-- Arquivo de Log para toda a saida de error -->
+	<appender name="LOG-ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+	    <file>/app/logs/database-log-error.log</file>
+    
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>ERROR</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+    
+    	<rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+        	<fileNamePattern>/app/logs/database-log-error.%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
+        	<maxHistory>7</maxHistory>
+	        <maxFileSize>200MB</maxFileSize>
+	        <totalSizeCap>20GB</totalSizeCap> 
+    	</rollingPolicy>
+     
+	    <encoder>
+    	    <pattern>%d{dd-MM-yyyy HH:mm:ss.SSS} %-5level .%M - %msg%n</pattern>
+    	</encoder>
+	</appender> 
+	
+
+	<root level="INFO">
+		<appender-ref ref="CONSOLE"/>
+		<appender-ref ref="LOG-INFO"/>
+		<appender-ref ref="LOG-WARN"/>
+		<appender-ref ref="LOG-ERROR"/>
+		<appender-ref ref="LOGSTASH"/>
+	</root>
+
+</configuration>

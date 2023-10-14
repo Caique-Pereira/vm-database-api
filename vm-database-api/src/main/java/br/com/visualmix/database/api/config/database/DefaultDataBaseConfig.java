@@ -7,22 +7,22 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class DefaultDataBaseConfig  {
 
-	@Value("${DEFAULT.TIPOCONEXAO:null}")
+	@Value("${DEFAULT.TIPOCONEXAO: }")
 	private String connectionType;
 
-	@Value("${DEFAULT.PORTA:null}")
+	@Value("${DEFAULT.PORTA: }")
 	private String port;
 
-	@Value("${DEFAULT.SERVIDOR:null}")
+	@Value("${DEFAULT.SERVIDOR: }")
 	private String server;
 
-	@Value("${DEFAULT.DATABASE:null}")
+	@Value("${DEFAULT.DATABASE: }")
 	private String dataBase;
 
-	@Value("${DEFAULT.LOGIN:null}")
+	@Value("${DEFAULT.LOGIN: }")
 	private String user;
 
-	@Value("${DEFAULT.SENHA:null}")
+	@Value("${DEFAULT.SENHA: }")
 	private String password;
 
 	public void setDefaultConfig(ADataBaseConfig dataBaseConfig) {

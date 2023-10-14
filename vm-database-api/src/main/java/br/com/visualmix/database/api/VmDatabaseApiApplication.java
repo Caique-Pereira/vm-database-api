@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
+@ComponentScan(basePackages = {"br.com.visualmix"})
 public class VmDatabaseApiApplication {
 
 	public static void main(String[] args) {
@@ -16,3 +17,4 @@ public class VmDatabaseApiApplication {
 	}
 
 }
+	

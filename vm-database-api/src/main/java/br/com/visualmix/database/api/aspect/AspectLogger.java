@@ -4,6 +4,8 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Aspect
@@ -13,6 +15,7 @@ public class AspectLogger {
 	String methodName="";
 	String className="";
 	
+	private static final Logger logger = LoggerFactory.getLogger(AspectLogger.class);
 
 	@Pointcut("execution(* br.com.visualmix..*.*(..))")
 	public void myPointCut() {
@@ -32,6 +35,6 @@ public class AspectLogger {
 				parametros += "'" + x.toString() + "' | ";
 		}
 
-		System.out.println("Entrou no Metodo " + methodName + " Da classe " + className + (!parametros.equals("") ? " como valor de parametros :" + parametros : ""));
+		logger.info("Entrou no Metodo " + methodName + " Da classe " + className + (!parametros.equals("") ? " como valor de parametros :" + parametros : ""));
 	}
 }

@@ -29,34 +29,33 @@ import br.com.visualmix.database.api.util.DataSourceUtils;
 import br.com.visualmix.database.api.util.PoolDataSourceUtils;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.Setter;
+import lombok.ToString;
 
 @Configuration
 @Setter
 @EnableJpaRepositories(entityManagerFactoryRef = "EstatisticaEntityManager",
                        transactionManagerRef = "EstatisticaTransactionManager", 
                        basePackages = {DataBaseUtils.ESTATISTICA_BASE_PACKAGES})
+@ToString
 public class VmEstatisticaDataBaseConfig extends ADataBaseConfig {
 	
-	@Value("${ESTATISTICA.TIPOCONEXAO:null}")
+	@Value("${ESTATISTICA.TIPOCONEXAO: }")
 	private String connectionType;
 
-	@Value("${ESTATISTICA.PORTA:null}")
+	@Value("${ESTATISTICA.PORTA: }")
 	private String port;
 
-	@Value("${ESTATISTICA.SERVIDOR:null}")
+	@Value("${ESTATISTICA.SERVIDOR: }")
 	private String server;
 
-	@Value("${ESTATISTICA.DATABASE:null}")
+	@Value("${ESTATISTICA.DATABASE: }")
 	private String dataBase;
 
-	@Value("${ESTATISTICA.LOGIN:null}")
+	@Value("${ESTATISTICA.LOGIN: }")
 	private String user;
 
-	@Value("${ESTATISTICA.SENHA:null}")
+	@Value("${ESTATISTICA.SENHA: }")
 	private String password;
-	
-	@Autowired
-	DefaultDataBaseConfig defaultDataBase;
 	
 	@Autowired
 	@Lazy
@@ -69,24 +68,23 @@ public class VmEstatisticaDataBaseConfig extends ADataBaseConfig {
 	public DataSource dataSource() {
 		try {
 			datasource = newDataSource();
-		} catch (Exception e) { 
-			 try {
-		            setDefaultConfig();
-		            datasource = newDataSource();
-		        } catch (Exception e2) {
-		        	  try {
-		        			setFallBackConfig();
-							datasource = newDataSource();
-						} catch (Exception e3) {
-				
-					}
-  		        }
+		} catch (Exception e) {
+			e.printStackTrace();
+        	System.out.println(e.getMessage());
+			try {
+				setFallBackConfig();
+				datasource = newDataSource();
+			} catch (Exception e2) {
+				e2.printStackTrace();
+	        	System.out.println(e2.getMessage());
+
+			}
 		}
 		return datasource;
 	}
 
 	private DataSource newDataSource() throws ClassNotFoundException, PropertyVetoException,NullPointerException {
-		variableValidation();
+		DataBaseUtils.fieldsValidation(this);
 		IDataSource datasource = DataSourceUtils.createDataSource(this.connectionType);
 		ComboPooledDataSource pool = datasource.setPoolDataSourceConfigs(this);
 		PoolDataSourceUtils.setPooldDataSourceConfigs(pool);
@@ -121,9 +119,6 @@ public class VmEstatisticaDataBaseConfig extends ADataBaseConfig {
 		return transactionManager;
 	}
 	
-	public void setDefaultConfig() {
-		defaultDataBase.setDefaultConfig(this);
-	}
  
 	public void setFallBackConfig() {
 		FallBackH2DataBaseConfig.setfallBacktConfig(this);
@@ -160,12 +155,4 @@ public class VmEstatisticaDataBaseConfig extends ADataBaseConfig {
 
 	};
 	
-	private void variableValidation() {
-		if("null".equals(this.connectionType) || "null".equals(this.port) ||  "null".equals(this.server)
-		||  "null".equals(this.dataBase) || "null".equals(this.user) || "null".equals(this.password)) 
-		{
-			throw new NullPointerException("Erro ao configurar Banco Estatistica, uma ou mais variaveis de conexão são nulas");
-		}
-	}
-
 }
